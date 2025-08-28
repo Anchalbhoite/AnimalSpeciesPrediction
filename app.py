@@ -6,26 +6,26 @@ from torchvision import models, transforms
 from PIL import Image
 import gdown
 
+
 # -------------------------------
 # 1. Download model from Google Drive if not exists
 # -------------------------------
-MODEL_PATH = "animal_species_model.pth"
-DRIVE_ID = "1SzvGyDls3p8qoNOJIfSLwJz_NpGlTimb"
+import gdown
+import os
+from tensorflow.keras.models import load_model
+
+MODEL_PATH = "animal_species_model.h5"
+DRIVE_URL = "https://drive.google.com/uc?id=1SzvGyDls3p8qoNOJIfSLwJz_NpGlTimb"
 
 @st.cache_resource
-def load_model():
+def load_model_from_drive():
     if not os.path.exists(MODEL_PATH):
-        url = f"https://drive.google.com/uc?id={DRIVE_ID}"
-        gdown.download(url, MODEL_PATH, quiet=False)
-
-    # Load pre-trained VGG16 and replace classifier
-    model = models.vgg16(pretrained=False)
-    num_features = model.classifier[6].in_features
-    model.classifier[6] = nn.Linear(num_features, 10)  # Animals-10 dataset has 10 classes
-    model.load_state_dict(torch.load(MODEL_PATH, map_location=torch.device('cpu')))
-    model.eval()
+        st.info("Downloading model from Google Drive...")
+        gdown.download(DRIVE_URL, MODEL_PATH, quiet=False)
+    model = load_model(MODEL_PATH)
     return model
 
+model = load_model_from_drive()
 # -------------------------------
 # 2. Define transforms
 # -------------------------------
@@ -70,3 +70,4 @@ if uploaded_file is not None:
     label = predict_image(model, image)
 
     st.success(f"✅ Predicted Animal: **{label}**")
+
