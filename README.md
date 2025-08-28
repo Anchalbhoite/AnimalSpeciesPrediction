@@ -1,122 +1,123 @@
-# AnimalSpeciesPrediction
-# 🐾 Animal Species Prediction using Deep Learning
+# 🐾 Animal Species Prediction using Deep Learning  
 
-This project leverages transfer learning (VGG16) to build an image classification model that can identify **10 different animal species** from images. The model is trained using a large-scale image dataset and deployed in a way that enables real-time or uploaded image prediction.
+[![Live Demo](https://img.shields.io/badge/Live%20App-Streamlit-brightgreen?logo=streamlit)](https://animalspeciesprediction-hd9rgdle5bsmzoq6fas8dt.streamlit.app/)  
 
----
-
-## 📌 Project Overview
-
-- 📚 **Model Architecture:** VGG16 with custom classification layers
-- 🐶 **Classes:** 10 species (dog, cat, lion, elephant, etc.)
-- 🧠 **Technique:** Transfer Learning (Keras, TensorFlow)
-- 💾 **Dataset:** Raw image folders organized by species
-- 🖥️ **Platform:** Google Colab (Python)
-- 🗂️ **Deployment:** Local & Colab prediction supported
+This project leverages **Transfer Learning (VGG16)** to build an image classification model that can identify **10 different animal species** from images.  
+The trained model is deployed with **Streamlit** to allow real-time predictions on uploaded images.  
 
 ---
 
-## 🏗️ Project Structure
+## 📌 Project Overview  
 
-```
+- 📚 **Model Architecture:** VGG16 with custom classification layers  
+- 🐶 **Classes:** 10 species (butterfly, cat, chicken, cow, dog, elephant, horse, sheep, spider, squirrel)  
+- 🧠 **Technique:** Transfer Learning (PyTorch)  
+- 💾 **Dataset:** Raw images organized by species  
+- 🖥️ **Platform:** Trained in Colab / Local (Python)  
+- 🌐 **Deployment:** Streamlit App  
+
+---
+
+## 🏗️ Project Structure  
+
 AnimalSpeciesPrediction/
 │
 ├── dataset/
-│   └── raw-img/              # Subfolders for each animal class
+│ ├── raw-img/ # Original dataset
+│ └── split/ # Train/Val/Test splits
 │
-├── main.py                   # Model training script
-├── predict.py                # Script for image prediction (optional enhancement)
-├── requirements.txt          # Python dependencies
-├── README.md                 # Project documentation
-└── saved_models/
-    └── animal_species_model.h5  # Saved trained model
-```
+├── models/ # Saved model checkpoints
+│
+├── app.py # Streamlit app for prediction
+├── train.py # Training script
+├── requirements.txt # Dependencies
+├── README.md # Documentation
+
+yaml
+Copy code
 
 ---
 
-## 🚀 How to Run the Project
+## 🚀 How to Run the Project  
 
-### 📌 Step 1: Clone the Repository
-
+### 📌 Step 1: Clone the Repository  
 ```bash
 git clone https://github.com/your-username/AnimalSpeciesPrediction.git
 cd AnimalSpeciesPrediction
-```
-
-### 📌 Step 2: Install Requirements
-
-```bash
+📌 Step 2: Install Requirements
+bash
+Copy code
 pip install -r requirements.txt
-```
+📌 Step 3: Train the Model (Optional if you use pre-trained)
+bash
+Copy code
+python train.py
+📌 Step 4: Run the Streamlit App
+bash
+Copy code
+streamlit run app.py
+🧪 Dataset Format
+Your dataset must be structured like this:
 
-### 📌 Step 3: Train the Model (or Load Pretrained)
-
-```bash
-python main.py
-```
-
----
-
-## 🧪 Dataset Format
-
-The dataset must be structured like this:
-
-```
+bash
+Copy code
 dataset/
-└── raw-img/
-    ├── cat/
-    ├── dog/
-    ├── elephant/
-    └── ...
-```
+└── split/
+    ├── train/
+    │   ├── cat/
+    │   ├── dog/
+    │   ├── elephant/
+    │   └── ...
+    ├── val/
+    └── test/
+📈 Model Training Details
+✅ Base Model: VGG16 (without top layers)
 
-- Each folder should contain relevant images of that species.
+🔒 Frozen Layers: All except custom classifier
 
----
+📊 Metrics: Accuracy & Loss plotted
 
-## 📈 Model Training Details
+⏱️ Epochs: 5+ (configurable)
 
-- ✅ Base Model: VGG16 (without top layers)
-- 🔒 Frozen Layers: All layers except the custom classifier
-- 📊 Accuracy & Loss: Plotted using Matplotlib
-- ⏱️ Epochs: 5+ (configurable)
-- 📂 Validation Split: 20%
+📂 Validation split handled in split/
 
----
+📷 Prediction Example
+Upload an image in the Streamlit app to get predictions with probabilities.
 
-## 📷 Predict on New Image
+Example (Elephant image):
 
-```python
-from tensorflow.keras.models import load_model
-from tensorflow.keras.preprocessing import image
-import numpy as np
+vbnet
+Copy code
+✅ Predicted Animal: Elephant  
 
-model = load_model("saved_models/animal_species_model.h5")
-img = image.load_img("test.jpg", target_size=(224, 224))
-x = image.img_to_array(img)
-x = np.expand_dims(x, axis=0)
-x = preprocess_input(x)
-pred = model.predict(x)
-print("Predicted class:", np.argmax(pred))
-```
+📊 Class Probabilities  
+butterfly: 0.00%  
+cat: 0.00%  
+chicken: 0.00%  
+cow: 0.00%  
+dog: 0.00%  
+elephant: 100.00%  
+...
+🌟 Future Enhancements
+🔮 Top-3 predictions display
 
----
+🎥 Real-time webcam predictions
 
-## 🌟 Future Enhancements
+📊 Grad-CAM visualization for explainability
 
-- ✅ Real-time prediction via webcam
-- ✅ Deployment via Flask or Streamlit
-- ✅ Model improvement using ResNet/EfficientNet
-- ✅ Grad-CAM visualization for interpretability
+⚡ Deployment on Hugging Face Spaces / Docker
 
----
+🤝 Contributors
+Anchal Bhoite – Developer, Trainer, Documenter
 
-## 🤝 Contributors
+📃 License
+This project is open source and available under the MIT License.
 
-- **Anchal Bhoite** – Developer, Trainer, Documenter
 
----
 
-## 📃 License
 
-This project is open source and available under the [MIT License](LICENSE).
+
+
+
+
+ChatGPT can make mistakes. Check important info. 
