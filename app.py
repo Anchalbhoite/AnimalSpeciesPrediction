@@ -5,15 +5,11 @@ import torch.nn.functional as F
 from torchvision import models, transforms
 from PIL import Image
 import gdown
-
+import os
 
 # -------------------------------
 # 1. Download model from Google Drive if not exists
 # -------------------------------
-import gdown
-import os
-from tensorflow.keras.models import load_model
-
 MODEL_PATH = "animal_species_model.pth"
 DRIVE_URL = "https://drive.google.com/uc?id=1SzvGyDls3p8qoNOJIfSLwJz_NpGlTimb"
 
@@ -22,10 +18,13 @@ def load_model_from_drive():
     if not os.path.exists(MODEL_PATH):
         st.info("Downloading model from Google Drive...")
         gdown.download(DRIVE_URL, MODEL_PATH, quiet=False)
-    model = load_model(MODEL_PATH)
+    # Load PyTorch model
+    model = torch.load(MODEL_PATH, map_location=torch.device('cpu'))
+    model.eval()
     return model
 
 model = load_model_from_drive()
+
 # -------------------------------
 # 2. Define transforms
 # -------------------------------
@@ -36,7 +35,7 @@ transform = transforms.Compose([
 ])
 
 # -------------------------------
-# 3. Class labels (update with your dataset labels)
+# 3. Class labels
 # -------------------------------
 class_labels = [
     "Dog", "Cat", "Horse", "Elephant", "Butterfly",
@@ -66,9 +65,5 @@ if uploaded_file is not None:
     st.image(image, caption="Uploaded Image", use_column_width=True)
 
     st.write("🔍 Predicting...")
-    model = load_model()
     label = predict_image(model, image)
-
     st.success(f"✅ Predicted Animal: **{label}**")
-
-
