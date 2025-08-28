@@ -1,6 +1,7 @@
+import os
 import streamlit as st
 import torch
-import os
+
 
 import torch.nn as nn
 import torch.nn.functional as F
@@ -65,13 +66,16 @@ uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png
 
 if uploaded_file is not None:
     image = Image.open(uploaded_file).convert("RGB")
-   st.image(image, caption="Uploaded Image", use_container_width=True)
-
+    st.image(image, caption="Uploaded Image", use_container_width=True)
 
     st.write("🔍 Predicting...")
     model = load_model()
     label = predict_image(model, image)
 
     st.success(f"✅ Predicted Animal: **{label}**")
+
+
+    st.success(f"✅ Predicted Animal: **{label}**")
+
 
 
