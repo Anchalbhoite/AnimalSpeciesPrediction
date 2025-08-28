@@ -3,7 +3,7 @@ tensorflow
 torch
 torchvision
 keras
-
+os
 # Image Processing & Utils
 pillow
 opencv-python
@@ -16,3 +16,4 @@ gdown
 
 # App Framework
 streamlit
+
