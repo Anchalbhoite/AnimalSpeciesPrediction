@@ -6,6 +6,7 @@ keras
 # Image Processing & Utils
 pillow
 opencv-python
+fastai
 
 # Data Science
 numpy
@@ -15,5 +16,6 @@ gdown
 
 # App Framework
 streamlit
+
 
 
