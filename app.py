@@ -14,7 +14,7 @@ import gdown
 import os
 from tensorflow.keras.models import load_model
 
-MODEL_PATH = "animal_species_model.h5"
+MODEL_PATH = "animal_species_model.pth"
 DRIVE_URL = "https://drive.google.com/uc?id=1SzvGyDls3p8qoNOJIfSLwJz_NpGlTimb"
 
 @st.cache_resource
@@ -70,4 +70,5 @@ if uploaded_file is not None:
     label = predict_image(model, image)
 
     st.success(f"✅ Predicted Animal: **{label}**")
+
 
