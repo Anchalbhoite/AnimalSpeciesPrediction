@@ -1,91 +1,72 @@
+import streamlit as st
 import torch
 import torch.nn as nn
-import torchvision.transforms as transforms
-from torchvision import models
+import torch.nn.functional as F
+from torchvision import models, transforms
 from PIL import Image
-import io
-from flask import Flask, request, render_template, jsonify
 import gdown
-import os
 
-# =======================
-# CONFIG
-# =======================
-app = Flask(__name__)
-
+# -------------------------------
+# 1. Download model from Google Drive if not exists
+# -------------------------------
 MODEL_PATH = "animal_species_model.pth"
-GOOGLE_DRIVE_ID = "1SzvGyDls3p8qoNOJIfSLwJz_NpGlTimb"   # Replace with your file ID
+DRIVE_ID = "1SzvGyDls3p8qoNOJIfSLwJz_NpGlTimb"
 
-# =======================
-# DOWNLOAD MODEL FROM DRIVE
-# =======================
-if not os.path.exists(MODEL_PATH):
-    print("Downloading model from Google Drive...")
-    gdown.download(f"https://drive.google.com/uc?id={GOOGLE_DRIVE_ID}", MODEL_PATH, quiet=False)
+@st.cache_resource
+def load_model():
+    if not os.path.exists(MODEL_PATH):
+        url = f"https://drive.google.com/uc?id={DRIVE_ID}"
+        gdown.download(url, MODEL_PATH, quiet=False)
 
-# =======================
-# DEFINE MODEL
-# =======================
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # Load pre-trained VGG16 and replace classifier
+    model = models.vgg16(pretrained=False)
+    num_features = model.classifier[6].in_features
+    model.classifier[6] = nn.Linear(num_features, 10)  # Animals-10 dataset has 10 classes
+    model.load_state_dict(torch.load(MODEL_PATH, map_location=torch.device('cpu')))
+    model.eval()
+    return model
 
-num_classes = 10  # Animals-10 dataset has 10 classes
-model = models.vgg16(pretrained=False)
-model.classifier[6] = nn.Linear(4096, num_classes)
-model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
-model.to(device)
-model.eval()
-
-# =======================
-# IMAGE TRANSFORM
-# =======================
+# -------------------------------
+# 2. Define transforms
+# -------------------------------
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                         std=[0.229, 0.224, 0.225])
+    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 ])
 
-# Class labels for Animals-10 dataset
-classes = [
-    "dog", "cat", "horse", "elephant", "butterfly",
-    "chicken", "spider", "sheep", "cow", "squirrel"
+# -------------------------------
+# 3. Class labels (update with your dataset labels)
+# -------------------------------
+class_labels = [
+    "Dog", "Cat", "Horse", "Elephant", "Butterfly",
+    "Chicken", "Sheep", "Spider", "Squirrel", "Cow"
 ]
 
-# =======================
-# ROUTES
-# =======================
-@app.route("/")
-def index():
-    return render_template("index.html")
+# -------------------------------
+# 4. Prediction function
+# -------------------------------
+def predict_image(model, image):
+    img = transform(image).unsqueeze(0)  # Add batch dimension
+    with torch.no_grad():
+        outputs = model(img)
+        _, predicted = torch.max(outputs, 1)
+    return class_labels[predicted.item()]
 
-@app.route("/predict", methods=["POST"])
-def predict():
-    if "file" not in request.files:
-        return jsonify({"error": "No file uploaded"})
-    
-    file = request.files["file"]
-    if file.filename == "":
-        return jsonify({"error": "No selected file"})
+# -------------------------------
+# 5. Streamlit App UI
+# -------------------------------
+st.title("🐾 Animal Species Prediction App")
+st.write("Upload an image, and the model will predict the animal species!")
 
-    try:
-        # Read image
-        img_bytes = file.read()
-        img = Image.open(io.BytesIO(img_bytes)).convert("RGB")
-        img = transform(img).unsqueeze(0).to(device)
+uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
 
-        # Prediction
-        with torch.no_grad():
-            outputs = model(img)
-            _, predicted = torch.max(outputs, 1)
-            label = classes[predicted.item()]
+if uploaded_file is not None:
+    image = Image.open(uploaded_file).convert("RGB")
+    st.image(image, caption="Uploaded Image", use_column_width=True)
 
-        return jsonify({"prediction": label})
+    st.write("🔍 Predicting...")
+    model = load_model()
+    label = predict_image(model, image)
 
-    except Exception as e:
-        return jsonify({"error": str(e)})
-
-# =======================
-# MAIN
-# =======================
-if __name__ == "__main__":
-    app.run(debug=True)
+    st.success(f"✅ Predicted Animal: **{label}**")
