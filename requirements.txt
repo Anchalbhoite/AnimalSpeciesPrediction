@@ -1,8 +1,18 @@
+# Deep Learning Frameworks
 tensorflow
+torch
+torchvision
 keras
+
+# Image Processing & Utils
+pillow
+opencv-python
+
+# Data Science
 numpy
 matplotlib
-opencv-python
 scikit-learn
-Pillow
+gdown
+
+# App Framework
 streamlit
