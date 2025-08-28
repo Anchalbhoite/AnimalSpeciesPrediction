@@ -1,68 +1,72 @@
 import streamlit as st
 import torch
-from torchvision import transforms
+import torch.nn as nn
+import torch.nn.functional as F
+from torchvision import models, transforms
 from PIL import Image
 import gdown
-import os
 
 # -------------------------------
-# 1. Model download path
+# 1. Download model from Google Drive if not exists
+# -------------------------------
 MODEL_PATH = "animal_species_model.pth"
-DRIVE_URL = "https://drive.google.com/uc?id=1SzvGyDls3p8qoNOJIfSLwJz_NpGlTimb"
+DRIVE_ID = "1SzvGyDls3p8qoNOJIfSLwJz_NpGlTimb"
 
-# -------------------------------
-# 2. Load model
 @st.cache_resource
-def load_model_from_drive():
+def load_model():
     if not os.path.exists(MODEL_PATH):
-        st.info("Downloading model from Google Drive...")
-        gdown.download(DRIVE_URL, MODEL_PATH, quiet=False)
+        url = f"https://drive.google.com/uc?id={DRIVE_ID}"
+        gdown.download(url, MODEL_PATH, quiet=False)
 
-    # 2a. Define your model architecture (from training code)
-    model = YourModelClass()  # ← Replace with your exact model class
-
-    # 2b. Load state_dict
-    state_dict = torch.load(MODEL_PATH, map_location='cpu')
-    model.load_state_dict(state_dict)
+    # Load pre-trained VGG16 and replace classifier
+    model = models.vgg16(pretrained=False)
+    num_features = model.classifier[6].in_features
+    model.classifier[6] = nn.Linear(num_features, 10)  # Animals-10 dataset has 10 classes
+    model.load_state_dict(torch.load(MODEL_PATH, map_location=torch.device('cpu')))
     model.eval()
     return model
 
-model = load_model_from_drive()
-
 # -------------------------------
-# 3. Image transform
+# 2. Define transforms
+# -------------------------------
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
-    transforms.Normalize([0.485, 0.456, 0.406],
-                         [0.229, 0.224, 0.225])
+    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 ])
 
 # -------------------------------
-# 4. Class labels
+# 3. Class labels (update with your dataset labels)
+# -------------------------------
 class_labels = [
-    "Dog","Cat","Horse","Elephant","Butterfly",
-    "Chicken","Sheep","Spider","Squirrel","Cow"
+    "Dog", "Cat", "Horse", "Elephant", "Butterfly",
+    "Chicken", "Sheep", "Spider", "Squirrel", "Cow"
 ]
 
 # -------------------------------
-# 5. Prediction function
+# 4. Prediction function
+# -------------------------------
 def predict_image(model, image):
-    img = transform(image).unsqueeze(0)
+    img = transform(image).unsqueeze(0)  # Add batch dimension
     with torch.no_grad():
         outputs = model(img)
         _, predicted = torch.max(outputs, 1)
     return class_labels[predicted.item()]
 
 # -------------------------------
-# 6. Streamlit UI
+# 5. Streamlit App UI
+# -------------------------------
 st.title("🐾 Animal Species Prediction App")
 st.write("Upload an image, and the model will predict the animal species!")
 
-uploaded_file = st.file_uploader("Choose an image...", type=["jpg","jpeg","png"])
-if uploaded_file:
+uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+
+if uploaded_file is not None:
     image = Image.open(uploaded_file).convert("RGB")
     st.image(image, caption="Uploaded Image", use_column_width=True)
+
     st.write("🔍 Predicting...")
+    model = load_model()
     label = predict_image(model, image)
+
     st.success(f"✅ Predicted Animal: **{label}**")
