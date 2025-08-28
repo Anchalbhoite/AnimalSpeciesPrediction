@@ -1,5 +1,7 @@
 import streamlit as st
 import torch
+import os
+
 import torch.nn as nn
 import torch.nn.functional as F
 from torchvision import models, transforms
@@ -70,3 +72,4 @@ if uploaded_file is not None:
     label = predict_image(model, image)
 
     st.success(f"✅ Predicted Animal: **{label}**")
+
