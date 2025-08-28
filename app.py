@@ -1,8 +1,6 @@
-import os
 import streamlit as st
 import torch
-
-
+import os   # <--- THIS must be here
 import torch.nn as nn
 import torch.nn.functional as F
 from torchvision import models, transforms
@@ -76,6 +74,7 @@ if uploaded_file is not None:
 
 
     st.success(f"✅ Predicted Animal: **{label}**")
+
 
 
 
